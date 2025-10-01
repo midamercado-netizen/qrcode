@@ -202,6 +202,8 @@
     </div>
 
     <script>
+        let currentQRCodeUrl = '';
+        
         function generateQRCode() {
             const url = document.getElementById('urlInput').value.trim();
             const qrcodeContainer = document.getElementById('qrcode');
@@ -221,19 +223,30 @@
             // Limpar QR code anterior
             qrcodeContainer.innerHTML = '';
             
-            // Gerar novo QR code
-            QRCode.toCanvas(qrcodeContainer, url, {
+            // Gerar novo QR code usando a abordagem com callback
+            QRCode.toDataURL(url, {
                 width: 256,
                 height: 256,
                 colorDark: '#000000',
                 colorLight: '#ffffff',
                 correctLevel: QRCode.CorrectLevel.H
-            }, function(error) {
+            }, function(error, url) {
                 if (error) {
                     console.error(error);
                     alert('Erro ao gerar QR code. Tente novamente.');
                     return;
                 }
+                
+                // Criar elemento de imagem
+                const img = document.createElement('img');
+                img.src = url;
+                img.alt = 'QR Code';
+                
+                // Adicionar imagem ao container
+                qrcodeContainer.appendChild(img);
+                
+                // Salvar URL para download
+                currentQRCodeUrl = url;
                 
                 // Mostrar botão de download
                 downloadBtn.style.display = 'inline-block';
@@ -244,20 +257,21 @@
             document.getElementById('qrcode').innerHTML = '';
             document.getElementById('urlInput').value = 'https://';
             document.getElementById('downloadBtn').style.display = 'none';
+            currentQRCodeUrl = '';
         }
         
         function downloadQRCode() {
-            const canvas = document.querySelector('#qrcode canvas');
-            if (!canvas) {
+            if (!currentQRCodeUrl) {
                 alert('Gere um QR code primeiro!');
                 return;
             }
             
-            const url = canvas.toDataURL('image/png');
             const link = document.createElement('a');
-            link.download = 'qrcode.png';
-            link.href = url;
+            link.download = 'qrcode-patico-mendes.png';
+            link.href = currentQRCodeUrl;
+            document.body.appendChild(link);
             link.click();
+            document.body.removeChild(link);
         }
         
         // Gerar QR code ao pressionar Enter
